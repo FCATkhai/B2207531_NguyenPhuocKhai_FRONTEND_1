@@ -27,7 +27,11 @@
             </label>
         </div>
         <div class="mt-3">
-            <button class="btn btn-primary">
+            <!-- Hiển thị nút "Lưu" hoặc "Cập nhật" tùy thuộc vào việc contactLocal có _id hay không -->
+            <button v-if="contactLocal._id" class="btn btn-primary" @click="editContact">
+                <i class="fa-solid fa-floppy-disk"></i> Cập nhật
+            </button>
+            <button v-else class="btn btn-primary">
                 <i class="fa-solid fa-floppy-disk"></i> Lưu
             </button>
             <button v-if="contactLocal._id" type="button" class="ms-2 btn btn-danger" @click="deleteContact">
@@ -48,11 +52,20 @@ export default {
         Field,
         ErrorMessage,
     },
-    emits: ["submit:contact", "delete:contact"],
+    emits: ["edit:contact", "delete:contact", "submit:contact"],
     props: {
-        contact: { type: Object, required: true }
+        contact: { type: Object, required: true},
     },
     data() {
+
+        const fallbackContact = {
+            name: "",
+            email: "",
+            address: "",
+            phone: "",
+            favorite: false,
+        };
+
         const contactFormSchema = yup.object().shape({
             name: yup
                 .string()
@@ -74,13 +87,16 @@ export default {
         return {
             // Chúng ta sẽ không muốn hiệu chỉnh props, nên tạo biến cục bộ
             // contactLocal để liên kết với các input trên form
-            contactLocal: this.contact,
+            contactLocal: this.contact || fallbackContact,
             contactFormSchema,
         };
     },
     methods: {
         submitContact() {
             this.$emit("submit:contact", this.contactLocal);
+        },
+        editContact() {
+            this.$emit("edit:contact", this.contactLocal);
         },
         deleteContact() {
             this.$emit("delete:contact", this.contactLocal.id);
